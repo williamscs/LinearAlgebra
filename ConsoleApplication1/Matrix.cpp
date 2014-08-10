@@ -5,25 +5,9 @@
 #include <cstdio>
 #include <vector>
 #include <string>
+#include "Matrix.h"
 
-class Matrix{
-	int d1, d2;
-	std::vector < std::vector<float>> m;
-public:
-	Matrix(int, int);
-	void fill(float);
-	int get_numrows() const;
-	int get_numcols() const;
-	float get_pos(int, int) const;
-	void set_pos(int, int, float);
-	/*Matrix dotProduct(const Matrix&);
-	Matrix crossProduct(const Matrix&);*/
-	Matrix operator+(const Matrix&);
-	Matrix operator-(const Matrix&);
-	Matrix operator*(const Matrix&);
-	Matrix operator/(const Matrix&);
-	std::string to_str();
-};
+
 
 Matrix::Matrix(int x, int y){
 	d1 = x;
@@ -40,20 +24,19 @@ void Matrix::fill(float f){
 		for (unsigned j = 0; j < col.size(); j++){
 			col.at(j) = f;
 		}
-		//printf(std::to_string(f).c_str());
 		m.at(i) = col;
 	}
 }
 
-int Matrix::get_numrows() const{
+unsigned Matrix::get_numrows() const{
 	return d1;
 }
 
-int Matrix::get_numcols() const{
+unsigned Matrix::get_numcols() const{
 	return d2;
 }
 
-float Matrix::get_pos(int row, int col) const{
+float Matrix::get_pos(unsigned row, unsigned col) const{
 	if (row >= d1 || col >= d2){
 		return 0;
 	}
@@ -61,7 +44,7 @@ float Matrix::get_pos(int row, int col) const{
 	return column.at(col);
 }
 
-void Matrix::set_pos(int row, int col, float val){
+void Matrix::set_pos(unsigned row, unsigned col, float val){
 	if (row >= d1 || col >= d2){
 		return;
 	}
@@ -69,21 +52,6 @@ void Matrix::set_pos(int row, int col, float val){
 	column.at(col) = val;
 	m.at(row) = column;
 }
-
-//Matrix Matrix::dotProduct(const Matrix& other){
-//	//if (d1 == other.d2)
-//	Matrix result(d1, d2);
-//	if (this->get_numcols() == other.get_numrows()){
-//		printf("WE CAN DO THIS!");
-//	}
-//	return result;
-//}
-//
-//Matrix Matrix::crossProduct(const Matrix& other){
-//
-//	Matrix result(d1, d2);
-//	return result;
-//}
 
 Matrix Matrix::operator+(const Matrix& other){
 	Matrix result(d1,d2);
@@ -120,13 +88,29 @@ Matrix Matrix::operator-(const Matrix& other){
 }
 
 Matrix Matrix::operator*(const Matrix& other){
-	Matrix result(other.get_numcols(), this->get_numrows);
+	Matrix result(other.get_numcols(), this->get_numrows());
 	if (this->get_numcols() == other.get_numrows()){
-		for (unsigned i = 0; i < this->get_numcols(); i++){
-			for (unsigned i = 0; i < other.get_numrows(); i++){
-
+		float resultValue = 0;
+		unsigned m1Rows = this->get_numrows();
+		unsigned m2Cols = other.get_numcols();
+		unsigned matched = this->get_numcols();
+		float finalVal = 0;
+		float tmpVal = 0;
+		for (unsigned i = 0; i < m1Rows; i++){
+			for (unsigned j = 0; j < m2Cols; j++){
+				for (unsigned k = 0; k < matched; k++){
+					float tmp1 = this->get_pos(i, k);
+					float tmp2 = other.get_pos(k, j);
+					tmpVal = tmp1 * tmp2;
+					printf("(%d, %d) * (%d, %d)\n", i, k, k, j);
+					finalVal += tmpVal;
+				}
+				result.set_pos(i, j, finalVal);
+				finalVal = 0;
 			}
 		}
+	} else {
+		printf("Bad matchup");
 	}
 
 	return result;
@@ -173,6 +157,34 @@ int _tmain(int argc, _TCHAR* argv[])
 	Matrix m3 = m1 + m2;
 	printf(m3.to_str().c_str());
 	m3 = m1 - m2;
+	printf(m3.to_str().c_str());
+
+	Matrix m4(2, 5);
+	m4.set_pos(0, 0, 1);
+	m4.set_pos(0, 1, 2);
+	m4.set_pos(0, 2, 3);
+	m4.set_pos(0, 3, 4);
+	m4.set_pos(0, 4, 5);
+	m4.set_pos(1, 0, 5);
+	m4.set_pos(1, 1, 6);
+	m4.set_pos(1, 2, 7);
+	m4.set_pos(1, 3, 8);
+	m4.set_pos(1, 4, 9);
+	Matrix m5(5, 2);
+	m5.set_pos(0, 0, 1);
+	m5.set_pos(0, 1, 2);
+	m5.set_pos(1, 0, 2);
+	m5.set_pos(1, 1, 3);
+	m5.set_pos(2, 0, 3);
+	m5.set_pos(2, 1, 4);
+	m5.set_pos(3, 0, 4);
+	m5.set_pos(3, 1, 5);
+	m5.set_pos(4, 0, 5);
+	m5.set_pos(4, 1, 6);
+
+	printf(m4.to_str().c_str());
+	printf(m5.to_str().c_str());
+	m3 = m4 * m5;
 	printf(m3.to_str().c_str());
 	float f = 0;
 	return 0;
