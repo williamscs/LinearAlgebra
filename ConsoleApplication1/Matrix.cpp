@@ -10,21 +10,16 @@
 
 
 Matrix::Matrix(int x, int y){
-	d1 = x;
-	d2 = y;
-	m = std::vector<std::vector<float>>(d1, std::vector<float>(d2, 0));
-	//std::vector<std::vector<float>> m(d1, std::vector<float>(d2, 0));
+	d1 = x; //rows
+	d2 = y; //columns
+	m = std::vector<float>(d1*d2, 0);
 }
 
 
 void Matrix::fill(float f){
 	for (unsigned i = 0; i < m.size(); i++)
 	{
-		std::vector<float> col = m.at(i);
-		for (unsigned j = 0; j < col.size(); j++){
-			col.at(j) = f;
-		}
-		m.at(i) = col;
+		m.at(i) = f;
 	}
 }
 
@@ -40,17 +35,14 @@ float Matrix::get_pos(unsigned row, unsigned col) const{
 	if (row >= d1 || col >= d2){
 		return 0;
 	}
-	std::vector<float> column = m.at(row);
-	return column.at(col);
+	return m.at(row*d2+col);
 }
 
 void Matrix::set_pos(unsigned row, unsigned col, float val){
 	if (row >= d1 || col >= d2){
 		return;
 	}
-	std::vector<float> column = m.at(row);
-	column.at(col) = val;
-	m.at(row) = column;
+	m.at( (row * d2) + col) = val;
 }
 
 Matrix Matrix::operator+(const Matrix& other){
@@ -118,33 +110,35 @@ Matrix Matrix::operator*(const Matrix& other){
 
 std::string Matrix::to_str() {
 	std::string returnString = "";
-	for (unsigned i = 0; i < d1; i++){
-		if (i == 0){
-			returnString.append("/");
-		}
-		else if (i == d1-1) {
-			returnString.append("\\");
-		}
-		else{
-			returnString.append("|");
-		}
-		for (unsigned j = 0; j < d2; j++){
-			std::vector<float> col = m.at(i);
-			returnString.append(std::to_string(col.at(j)));
-			if (j != d2 - 1){
-				returnString.append(", ");
+	returnString.append("\n");
+	for (unsigned i = 0; i < m.size(); i++){
+		if (i % d2 == 0){
+			if (i == 0){
+				returnString.append("/");
+			} else if (i/d2 == d1 - 1) {
+				returnString.append("\\");
+			} else{
+				returnString.append("|");
 			}
 		}
-		if (i == 0){
-			returnString.append("\\");
-		} else if (i == d1 - 1) {
-			returnString.append("/");
-		} else {
-			returnString.append("|");
+		
+		returnString.append(std::to_string(m.at(i)));
+		if ((i % d2) != (d2 - 1)){
+			returnString.append(", ");
+		}
+		else {
+			if (i == m.size() - 1) {
+				returnString.append("/");
+			} else if (i == (d2 - 1)){
+				returnString.append("\\");
+			} else {
+				returnString.append("|");
+			}
+			returnString.append("\n");
 		}
 
-		returnString.append("\n");
 	}
+	returnString.append("\n");
 	return returnString;
 }
 
