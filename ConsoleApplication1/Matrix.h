@@ -20,7 +20,11 @@ public:
 	Matrix* operator*(float);
 	Matrix* operator*(int);
 	std::string to_str();
+
 private:
 	unsigned d1, d2;
 	std::vector <float> m;
 };
+
+//Matrix* operator*(int, const Matrix&);
+Matrix* operator*(float, const Matrix&);

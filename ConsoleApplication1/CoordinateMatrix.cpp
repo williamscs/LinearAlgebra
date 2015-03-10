@@ -49,8 +49,8 @@ int _tmain(int argc, _TCHAR* argv[]){
 	printf(m3->to_str().c_str());
 	m3 = *m1 - *m2;
 	printf(m3->to_str().c_str());
-	float f = 2.0;
-	//m3 = f * *m1;
+	int f = 2;
+	m3 = f * *m1;
 	printf(m3->to_str().c_str());
 
 	delete m1;

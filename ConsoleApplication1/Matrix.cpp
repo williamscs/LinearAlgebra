@@ -140,22 +140,6 @@ Matrix* Matrix::operator*(const Matrix& rhs){
 }
 
 /**
- *	Scalar multiplication of a matrix
- */
-Matrix* operator*(int lhs, const Matrix& rhs){
-	unsigned rows = rhs.get_numrows(), columns = rhs.get_numcols();
-	Matrix* result = new Matrix(rows, columns);
-	for (unsigned i = 0; i < rows; i++){
-		for (unsigned j = 0; j < columns; j++){
-			float resultVal = rhs.get_pos(i, j) * lhs;
-			result->set_pos(i, j, resultVal);
-		}
-	}
-	return result;
-
-}
-
-/**
 *	Scalar multiplication of a matrix
 */
 Matrix* operator*(float lhs, const Matrix& rhs){
