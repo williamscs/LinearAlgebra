@@ -7,6 +7,6 @@ public:
 	virtual ~CoordinateMatrix();
 public:
 	float dotProduct(const CoordinateMatrix&);
-	CoordinateMatrix CoordinateMatrix::crossProduct(const CoordinateMatrix&);
+	CoordinateMatrix* CoordinateMatrix::crossProduct(const CoordinateMatrix&);
 };
 
