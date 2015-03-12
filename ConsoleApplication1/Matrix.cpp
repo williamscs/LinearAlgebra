@@ -19,6 +19,12 @@ Matrix::Matrix(int x, int y){
 Matrix::~Matrix(){
 }
 
+Matrix* Matrix::clone(){
+	Matrix* ret_matrix = new Matrix(d1, d2);
+	ret_matrix->m = this->m;
+	return ret_matrix;
+}
+
 /**
  * Fill matrix with given float version
  * @param f Value to fill
@@ -46,10 +52,113 @@ unsigned Matrix::get_numcols() const{
 }
 
 /**
+ * Is matrix square
+ * @return bool
+ */
+bool Matrix::is_square(){
+	return d1 == d2;
+}
+
+Matrix* Matrix::transpose(){
+	if (!this->is_square()){
+		return NULL;
+	}
+
+	Matrix* transposed = new Matrix(this->get_numrows(), this->get_numcols());
+
+	for (size_t i = 0; i < this->get_numcols(); i++)
+	{
+		for (size_t j = 0; j < this->get_numrows(); j++)
+		{
+			transposed->set_pos(i, j, this->get_pos(j, i));
+		}
+	}
+	return transposed;
+}
+
+Matrix* Matrix::get_det_submatrix(unsigned index){
+	Matrix* new_matrix = new Matrix(this->get_numrows() - 1, this->get_numcols() - 1);
+	new_matrix->m.resize(0);
+	for (size_t i = this->get_numcols(); i < this->m.size(); i++) {
+		if (i % this->get_numcols() != index) {
+			new_matrix->m.push_back(this->m.at(i));
+		}
+	}
+	printf(new_matrix->to_str().c_str());
+	return new_matrix;
+}
+
+float Matrix::get_det(){
+	float rval = 0;
+	if (!this->is_square()){
+		return NULL;
+	}
+	if (this->get_numcols() == 2){
+		float ad = this->get_pos(0, 0) * this->get_pos(1, 1);
+		float bc = this->get_pos(0, 1) * this->get_pos(1, 0);
+		return ad - bc;
+	} else {
+		for (size_t i = 0; i < this->get_numcols(); i++) {
+
+			Matrix* new_matrix = this->get_det_submatrix(i);
+			if (i % 2 == 0){
+				rval += this->get_pos(0, i) * new_matrix->get_det();
+			} else {
+				rval -= this->get_pos(0, i) * new_matrix->get_det();
+			}
+		}
+	}
+
+	return rval;
+}
+
+unsigned Matrix::largest_col_in_row(unsigned row){
+	unsigned rval = 0;
+	float max = this->get_pos(row, 0);
+	for (size_t i = 1; i < this->get_numcols(); i++){
+		float val2 = this->get_pos(row, i);
+		if (val2 > max) {
+			max = val2;
+			rval = i;
+		}
+		
+	}
+	return rval;
+}
+
+void Matrix::swap_rows(unsigned row1, unsigned row2){
+	printf("CHANGE PLACES: %d, %d", row1, row2);
+	float v1;
+	for (size_t i = 0; i < this->get_numcols(); i++){
+		v1 = this->get_pos(row1, i);
+		this->set_pos(row1, i, this->get_pos(row2, i));
+		this->set_pos(row2, i, v1);
+	}
+}
+
+Matrix* Matrix::get_inverse(){
+	if (!this->is_square()){
+		return NULL;
+	}
+	Matrix* rval = this->clone();
+	for (size_t k = 0; k < this->get_numcols(); k++){
+		unsigned largest_col = this->largest_col_in_row(k);
+		if (this->get_pos( largest_col, k) == 0){
+			//Matrix is singular
+			return NULL;
+		}
+		this->swap_rows(k, largest_col);
+		printf(this->to_str().c_str());
+		printf(rval->to_str().c_str());
+	}
+
+}
+
+/**
  * Get value at 0-indexed position TODO: Possibly change to 1-index
  * @param  row 	Row position
  * @param  col 	Column position
- * @return
+ * @return float
  */
 float Matrix::get_pos(unsigned row, unsigned col) const{
 	if (row >= d1 || col >= d2){
