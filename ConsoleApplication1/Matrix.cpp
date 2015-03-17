@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <vector>
 #include <string>
+#include <sstream>
 #include "Matrix.h"
 
 /**
@@ -23,6 +24,44 @@ Matrix* Matrix::clone(){
 	Matrix* ret_matrix = new Matrix(d1, d2);
 	ret_matrix->m = this->m;
 	return ret_matrix;
+}
+
+void Matrix::identity_fill(){
+	if (this->get_numcols() != this->get_numrows()){
+		return;
+	}
+	this->fill(0);
+	for (size_t i = 0; i < m.size(); i + (size_t)d1 + 1){
+		this->m[i] = 1;
+	}
+}
+
+Matrix* Matrix::augment_matrix(){
+	Matrix* augmented_matrix = new Matrix(d1, d2*2);
+	augmented_matrix->fill(0);
+	for (int i = 0; i < this->get_numrows(); i++){
+		for (int j = 0; j < this->get_numcols(); j++){
+			augmented_matrix->set_pos(i, j, this->get_pos(i, j));
+		}
+		augmented_matrix->set_pos(i, i + this->get_numrows(), 1);
+		
+	}
+
+	//printf("augmented matrix is:\n%s", augmented_matrix->to_str().c_str());
+	return augmented_matrix;
+}
+
+Matrix* Matrix::split_inverse(Matrix* old){
+	Matrix* inverse_matrix = new Matrix(old->get_numrows(), old->get_numcols() / 2);
+	unsigned numcols = old->get_numcols()/2;
+	for (int i = 0; i < old->get_numrows(); i++){
+		for (int j = 0; j < numcols; j++){
+			inverse_matrix->set_pos(i, j, old->get_pos(i, j+numcols));
+		}
+
+	}
+	delete old;
+	return inverse_matrix;
 }
 
 /**
@@ -84,7 +123,6 @@ Matrix* Matrix::get_det_submatrix(unsigned index){
 			new_matrix->m.push_back(this->m.at(i));
 		}
 	}
-	printf(new_matrix->to_str().c_str());
 	return new_matrix;
 }
 
@@ -127,7 +165,7 @@ unsigned Matrix::largest_col_in_row(unsigned row){
 }
 
 void Matrix::swap_rows(unsigned row1, unsigned row2){
-	printf("CHANGE PLACES: %d, %d", row1, row2);
+	printf("CHANGE PLACES: %d, %d\n", row1, row2);
 	float v1;
 	for (size_t i = 0; i < this->get_numcols(); i++){
 		v1 = this->get_pos(row1, i);
@@ -136,22 +174,61 @@ void Matrix::swap_rows(unsigned row1, unsigned row2){
 	}
 }
 
+//from_row and to_row are indices!
+void Matrix::add_rows(unsigned from_row, unsigned to_row, float amount){
+	for (size_t i = 0; i < this->get_numcols(); i++){
+		float result = amount * this->get_pos(from_row, i);
+		result += this->get_pos(to_row, i);
+		//printf("result %f\n", result);
+		this->set_pos(to_row, i, result);
+	}
+	printf("Add rows: %s", this->to_str().c_str());
+}
+
+void Matrix::reduce_row(unsigned row_index){
+	float dividend = this->get_pos(row_index, row_index);
+	printf("Dividend %f\n", dividend);
+	for (size_t i = 0; i < this->get_numcols(); i++){
+		float result = this->get_pos(row_index, i);
+		result /= dividend;
+		this->set_pos(row_index, i, result);
+	}
+	printf("Reduce: %s", this->to_str().c_str());
+
+}
+
+float Matrix::solve_for_zero(float x, float y){
+	y *= -1;
+	return y / x;
+}
+
 Matrix* Matrix::get_inverse(){
 	if (!this->is_square()){
 		return NULL;
 	}
-	Matrix* rval = this->clone();
-	for (size_t k = 0; k < this->get_numcols(); k++){
-		unsigned largest_col = this->largest_col_in_row(k);
-		if (this->get_pos( largest_col, k) == 0){
-			//Matrix is singular
-			return NULL;
-		}
-		this->swap_rows(k, largest_col);
-		printf(this->to_str().c_str());
-		printf(rval->to_str().c_str());
+	if (this->get_det() == 0){
+		return NULL;
 	}
+	Matrix* rval = this->augment_matrix();
+	printf("Before: %s", rval->to_str().c_str());
+	int numrows = rval->get_numrows();
 
+	
+	for (size_t i = 0; i < numrows; i++){
+		//reduce row
+		rval->reduce_row(i);
+		for (size_t j = 0; j < numrows; j++){
+			//zero out following rows
+			if (i != j){
+				float x = rval->get_pos(i, i);
+				printf("x %f\n", x);
+				float y = rval->get_pos(j, i);
+				printf("y %f\n", y);
+				rval->add_rows(i, (j) % numrows, Matrix::solve_for_zero(x, y));
+			}
+		}
+	}
+	return Matrix::split_inverse(rval);
 }
 
 /**
@@ -279,7 +356,10 @@ Matrix* Matrix::operator*(float lhs){
 	return result;
 
 }
-
+double round(double d)
+{
+	return floor(d + 0.5);
+}
 /**
  * Debug friendly version of the current matrix.
  * @return std::string String containing a physically correct version of the matrix
@@ -297,8 +377,10 @@ std::string Matrix::to_str() {
 				returnString.append("|");
 			}
 		}
-		
-		returnString.append(std::to_string(m.at(i)));
+		std::stringstream ss;
+		ss << m.at(i);
+		std::string s(ss.str());
+		returnString.append(s);
 		if ((i % d2) != (d2 - 1)){
 			returnString.append(", ");
 		}

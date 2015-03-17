@@ -6,6 +6,9 @@ public:
 	Matrix(int, int);
 	~Matrix();
 	Matrix* clone();
+	void identity_fill();
+	Matrix* augment_matrix();
+	static Matrix* split_inverse(Matrix*);
 	void fill(float);
 	unsigned get_numrows() const;
 	unsigned get_numcols() const;
@@ -19,6 +22,9 @@ public:
 	float get_det();
 	unsigned largest_col_in_row(unsigned);
 	void Matrix::swap_rows(unsigned, unsigned);
+	void Matrix::add_rows(unsigned, unsigned, float);
+	void Matrix::reduce_row(unsigned);
+	static float Matrix::solve_for_zero(float, float);
 	Matrix* Matrix::get_inverse();
 	Matrix* operator+(const Matrix&);
 	Matrix* operator-(const Matrix&);

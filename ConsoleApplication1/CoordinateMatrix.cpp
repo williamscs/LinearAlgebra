@@ -58,9 +58,12 @@ int _tmain(int argc, _TCHAR* argv[]){
 	m1->set_pos(3, 1, -1);
 	m1->set_pos(3, 2, 2);
 	m1->set_pos(3, 3, -9);
-	printf(m1->is_square() ? "is square\n": "not square\n");
-	printf("determinant: %f\n", m1->get_det());
-	//printf(m2->to_str().c_str());
+	Matrix* m2 = m1->get_inverse();
+
+	//printf(m1->is_square() ? "is square\n": "not square\n");
+	//printf("determinant: %f\n", m1->get_det());
+	printf(m2->to_str().c_str());
+	getchar();
 	
 	//Matrix* m1 = new Matrix(1, 3);
 	//m1->fill(5);
